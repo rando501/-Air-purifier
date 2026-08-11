@@ -7,9 +7,16 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 Adafruit_PM25AQI aqi = Adafruit_PM25AQI();
 HardwareSerial pmsSerial(2);
 
+
 #define Left_Button 25
 #define Select_Button 26
 #define Right_Button 27
+#define Fan_pwm 13
+#define Fan_tech 12
+
+const int pwmFreq = 25000;
+const int pwmResolution = 8;
+
 float pm25 = 45.0;
 float pm10 = 20.0;
 
@@ -19,7 +26,8 @@ int Fan_Speed = 50;
 int screen = 0; //0 for main menu, 1 for fan control, 2 for air quality
 void setup() {
  
-  
+ledcAttachPin(Fan_pwm, 0);
+ledcSetup(0, pwmFreq, pwmResolution);
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
     pinMode(Left_Button, INPUT_PULLUP);
     pinMode(Select_Button, INPUT_PULLUP);
@@ -35,6 +43,9 @@ void setup() {
 
 
 void loop() { 
+int pwmValue = map(Fan_Speed, 0, 100, 0, 255);
+ledcWrite(0, pwmValue);
+
   PM25_AQI_Data data;
   if (aqi.read(&data)) {
     pm25 = data.pm25_standard;
